@@ -3,7 +3,5 @@ WORKDIR /app
 
 COPY target/*.jar app.jar
 
-LABEL authors="james"
-
 EXPOSE 8000
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
