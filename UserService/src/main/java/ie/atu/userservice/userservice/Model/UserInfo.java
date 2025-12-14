@@ -1,5 +1,6 @@
 package ie.atu.userservice.userservice.Model;
 
+import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -8,9 +9,16 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+@Entity
+@Table(name = "Users")
 @Data @AllArgsConstructor @NoArgsConstructor @Builder
 public class UserInfo
 {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id; // Primary Key
+
+
     @NotBlank(message = "ID is required")
     @Size(message = "ID cannot exceed 40 characters",max = 40)
     private String userID;
