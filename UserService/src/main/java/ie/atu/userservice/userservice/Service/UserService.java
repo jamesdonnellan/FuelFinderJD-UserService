@@ -1,63 +1,74 @@
 package ie.atu.userservice.userservice.Service;
 
 import ie.atu.userservice.userservice.ErrorHandling.DuplicateException;
+import ie.atu.userservice.userservice.ErrorHandling.UserNotFoundException;
 import ie.atu.userservice.userservice.Model.UserInfo;
+import ie.atu.userservice.userservice.Repository.UserRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-
 
 @Service
 public class UserService
 {
-    private final List<UserInfo> store = new ArrayList<>();
+  private final UserRepository repo;
+
+  public UserService(UserRepository repo)
+  {
+      this.repo = repo;
+  }
 
     public List<UserInfo> findAll()
     {
-        return new ArrayList<>(store);
+        return repo.findAll();
     }
 
-    public Optional<UserInfo> findById(String id)
+    public UserInfo findById(String userID)
     {
-        for(UserInfo user : store)
-        {
-            if(user.getUserID().equals(id))
-            {
-                return Optional.of(user);
-            }
-        }
-        return Optional.empty();
+      List<UserInfo> existingUser = repo.findByUserID(userID);
+
+      if(existingUser.isEmpty())
+      {
+          throw new UserNotFoundException("User with ID " + userID + " not found.");
+      }
+      return existingUser.getFirst();
     }
 
     public UserInfo create(UserInfo user)
     {
-        if(findById(user.getUserID()).isPresent())
+        List <UserInfo> existingUser = repo.findByUserID(user.getUserID());
+        if(!existingUser.isEmpty())
         {
             throw new DuplicateException("User with id " + user.getUserID() + " already exists");
         }
-        store.add(user);
-        return user;
+        return repo.save(user);
     }
 
-    public Optional <UserInfo> update(String id, UserInfo updated)
+    public UserInfo update(String userID, UserInfo updated)
     {
-        for (UserInfo user : store)
+        List<UserInfo> updatedUser = repo.findByUserID(userID);
+
+        if(updatedUser.isEmpty())
         {
-            if (user.getUserID().equals(id))
-            {
-                user.setUserName(updated.getUserName());
-                user.setPassword(updated.getPassword());
-                user.setEmail(updated.getEmail());
-                return Optional.of(user);
-            }
+            throw new UserNotFoundException("User with ID " + userID + " not found.");
         }
-        return Optional.empty();
+
+        updatedUser.getFirst().setUserName(updated.getUserName());
+        updatedUser.getFirst().setPassword(updated.getPassword());
+        updatedUser.getFirst().setEmail(updated.getEmail());
+
+        return repo.save(updatedUser.getFirst());
     }
 
-    public boolean deleteById(String id)
+    public void deleteById(String userID)
     {
-        return store.removeIf(user -> user.getUserID().equals(id));
+      List<UserInfo> deletedUser = repo.findByUserID(userID);
+
+      if(deletedUser.isEmpty())
+      {
+          throw new UserNotFoundException("User with ID " + userID + " not found.");
+      }
+
+      repo.delete(deletedUser.getFirst());
     }
 }

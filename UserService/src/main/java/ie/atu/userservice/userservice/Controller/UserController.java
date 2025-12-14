@@ -15,30 +15,31 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/users")
-public class UserController {
+public class UserController
+{
     private final UserService uService;
 
-    public UserController(UserService uService) {
+    public UserController(UserService uService)
+    {
         this.uService = uService;
     }
 
     @GetMapping // Gets all Users Information
-    public ResponseEntity<List<UserInfo>> findAll() {
+    public ResponseEntity<List<UserInfo>> findAll()
+    {
         return ResponseEntity.ok(uService.findAll());
     }
 
     @GetMapping("/{id}") // Gets one user by their ID
-    public ResponseEntity<UserInfo> getOne(@PathVariable String id) {
-        Optional<UserInfo> maybe = uService.findById(id);
-        if (maybe.isPresent()) {
-            return ResponseEntity.ok(maybe.get());
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<UserInfo> getOne(@PathVariable String id)
+    {
+       return ResponseEntity.ok(uService.findById(id));
     }
 
+
     @PostMapping // Updated Method for create user
-    public ResponseEntity<UserInfo> create(@Valid @RequestBody UserInfo user) {
+    public ResponseEntity<UserInfo> create(@Valid @RequestBody UserInfo user)
+    {
         UserInfo created = uService.create(user);
         return ResponseEntity
                 .created(URI.create("/api/users" + created.getUserID()))
@@ -46,18 +47,15 @@ public class UserController {
     }
 
     @PutMapping("/{id}") // New method for updating user data
-    public ResponseEntity<UserInfo> update(@PathVariable String id, @Valid @RequestBody UserInfo updated) {
-        Optional<UserInfo> maybe = uService.update(id, updated);
-        return maybe.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<UserInfo> update(@PathVariable String id, @Valid @RequestBody UserInfo updated)
+    {
+       return ResponseEntity.ok(uService.update(id, updated));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable String id) {
-       if(!uService.deleteById(id))
-       {
-           throw new UserNotFoundException("User with id" + id + "not found.");
-       }
+    public ResponseEntity<Void> delete(@PathVariable String id)
+    {
+       uService.deleteById(id);
        return ResponseEntity.noContent().build();
     }
 }
