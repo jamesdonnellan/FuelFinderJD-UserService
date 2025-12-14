@@ -1,6 +1,7 @@
 package ie.atu.userservice.userservice.Controller;
 
 
+import ie.atu.userservice.userservice.ErrorHandling.UserNotFoundException;
 import ie.atu.userservice.userservice.Model.UserInfo;
 import ie.atu.userservice.userservice.Service.UserService;
 import jakarta.validation.Valid;
@@ -53,7 +54,10 @@ public class UserController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable String id) {
-        boolean removed = uService.deleteById(id);
-        return removed ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+       if(!uService.deleteById(id))
+       {
+           throw new UserNotFoundException("User with id" + id + "not found.");
+       }
+       return ResponseEntity.noContent().build();
     }
 }

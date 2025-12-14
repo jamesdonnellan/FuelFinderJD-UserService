@@ -1,5 +1,6 @@
 package ie.atu.userservice.userservice.Service;
 
+import ie.atu.userservice.userservice.ErrorHandling.DuplicateException;
 import ie.atu.userservice.userservice.Model.UserInfo;
 import org.springframework.stereotype.Service;
 
@@ -34,7 +35,7 @@ public class UserService
     {
         if(findById(user.getUserID()).isPresent())
         {
-            throw new IllegalArgumentException("User with id " + user.getUserID() + " already exists");
+            throw new DuplicateException("User with id " + user.getUserID() + " already exists");
         }
         store.add(user);
         return user;
