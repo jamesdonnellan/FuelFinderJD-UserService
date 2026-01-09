@@ -1,5 +1,7 @@
 package ie.atu.userservice.userservice.Service;
 
+import ie.atu.userservice.userservice.dto.UserRequestDTO;
+import ie.atu.userservice.userservice.dto.UserResponseDTO;
 import ie.atu.userservice.userservice.ErrorHandling.DuplicateException;
 import ie.atu.userservice.userservice.ErrorHandling.UserNotFoundException;
 import ie.atu.userservice.userservice.Model.UserInfo;
@@ -18,12 +20,13 @@ public class UserService
       this.repo = repo;
   }
 
-    public List<UserInfo> findAll()
+    public List<UserResponseDTO> findAll()
     {
-        return repo.findAll();
+        List<UserInfo> users = repo.findAll();
+        return users.stream().map(this::toResponse).toList();
     }
 
-    public UserInfo findById(String userID)
+    public UserResponseDTO findById(String userID)
     {
       List<UserInfo> existingUser = repo.findByUserID(userID);
 
@@ -31,20 +34,30 @@ public class UserService
       {
           throw new UserNotFoundException("User with ID " + userID + " not found.");
       }
-      return existingUser.getFirst();
+
+      return toResponse(existingUser.getFirst());
     }
 
-    public UserInfo create(UserInfo user)
+    public UserResponseDTO create(UserRequestDTO user)
     {
         List <UserInfo> existingUser = repo.findByUserID(user.getUserID());
         if(!existingUser.isEmpty())
         {
             throw new DuplicateException("User with id " + user.getUserID() + " already exists");
         }
-        return repo.save(user);
+
+        UserInfo toSave = UserInfo.builder()
+                .userID(user.getUserID())
+                .userName(user.getUserName())
+                .email(user.getEmail())
+                .password(user.getPassword())
+                .build();
+
+        UserInfo saved = repo.save(toSave);
+        return toResponse(saved);
     }
 
-    public UserInfo update(String userID, UserInfo updated)
+    public UserResponseDTO update(String userID, UserRequestDTO updated)
     {
         List<UserInfo> updatedUser = repo.findByUserID(userID);
 
@@ -57,7 +70,8 @@ public class UserService
         updatedUser.getFirst().setPassword(updated.getPassword());
         updatedUser.getFirst().setEmail(updated.getEmail());
 
-        return repo.save(updatedUser.getFirst());
+        UserInfo saved = repo.save(updatedUser.getFirst());
+        return toResponse(saved);
     }
 
     public void deleteById(String userID)
@@ -70,5 +84,14 @@ public class UserService
       }
 
       repo.delete(deletedUser.getFirst());
+    }
+
+    private UserResponseDTO toResponse(UserInfo user)
+    {
+        return new UserResponseDTO(
+                user.getUserID(),
+                user.getUserName(),
+                user.getEmail()
+        );
     }
 }
