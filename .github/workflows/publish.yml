@@ -37,7 +37,8 @@ jobs:
       - name: Build & Push
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: ./UserService
+          file: ./UserService/Dockerfile
           push: true
           tags: |
             ${{ env.IMAGE }}:latest
